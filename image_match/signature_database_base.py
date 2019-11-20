@@ -187,7 +187,7 @@ class SignatureDatabaseBase(object):
 
         self.gis = ImageSignature(n=n_grid, crop_percentiles=crop_percentile, *signature_args, **signature_kwargs)
 
-    def add_image(self, path, img=None, bytestream=False, metadata=None, refresh_after=False):
+    def add_image(self, filename, path, bytestream=False, metadata=None, refresh_after=False):
         """Add a single image to the database
 
         Args:
@@ -205,10 +205,10 @@ class SignatureDatabaseBase(object):
             metadata (Optional): any other information you want to include, can be nested (default None)
 
         """
-        rec = make_record(path, self.gis, self.k, self.N, img=img, bytestream=bytestream, metadata=metadata)
+        rec = make_record(filename, path, self.gis, self.k, self.N, bytestream=bytestream, metadata=metadata)
         self.insert_single_record(rec, refresh_after=refresh_after)
 
-    def search_image(self, path, all_orientations=False, bytestream=False, pre_filter=None):
+    def search_image(self, path, bytestream=False, all_orientations=False, pre_filter=None):
         """Search for matches
 
         Args:
@@ -270,7 +270,7 @@ class SignatureDatabaseBase(object):
             transformed_img = transform(img)
 
             # generate the signature
-            transformed_record = make_record(transformed_img, self.gis, self.k, self.N)
+            transformed_record = make_record('', transformed_img, self.gis, self.k, self.N)
 
             l = self.search_single_record(transformed_record, pre_filter=pre_filter)
             result.extend(l)
@@ -286,7 +286,7 @@ class SignatureDatabaseBase(object):
         return r
 
 
-def make_record(path, gis, k, N, img=None, bytestream=False, metadata=None):
+def make_record(filename, path, gis, k, N, bytestream=False, metadata=None):
     """Makes a record suitable for database insertion.
 
     Note:
@@ -341,12 +341,8 @@ def make_record(path, gis, k, N, img=None, bytestream=False, metadata=None):
 
     """
     record = dict()
-    record['path'] = path
-    if img is not None:
-        signature = gis.generate_signature(img, bytestream=bytestream)
-    else:
-        signature = gis.generate_signature(path)
-
+    record['filename'] = filename
+    signature = gis.generate_signature(path, bytestream=bytestream)
     record['signature'] = signature.tolist()
 
     if metadata:

@@ -1,0 +1,31 @@
+from flask import Flask, request
+from elasticsearch import Elasticsearch
+from image_match.elasticsearch_driver import SignatureES
+import json
+
+app = Flask(__name__)
+es = Elasticsearch(['127.0.0.1'])
+ses = SignatureES(es)
+
+@app.route('/search/url')
+def searchByUrl():
+    return json.dumps(ses.search_image(request.args.get('url')))
+
+@app.route('/search/data', methods=['POST'])
+def searchByData():
+    return json.dumps(ses.search_image(request.stream.read(), bytestream=True))
+
+@app.route('/index/url')
+def indexByUrl():
+    ses.delete_duplicates(request.args.get('filename'))
+    ses.add_image(request.args.get('filename'), request.args.get('url'), metadata={'itemno': request.args.get('itemno')})
+    return 'OK'
+
+@app.route('/index/data', methods=['POST'])
+def indexByData():
+    ses.delete_duplicates(request.args.get('filename'))
+    ses.add_image(request.args.get('filename'), request.stream.read(), bytestream=True, metadata={'itemno': request.args.get('itemno')})
+    return 'OK'
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

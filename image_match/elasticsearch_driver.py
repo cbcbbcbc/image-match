@@ -47,7 +47,7 @@ class SignatureES(SignatureDatabaseBase):
         super(SignatureES, self).__init__(*args, **kwargs)
 
     def search_single_record(self, rec, pre_filter=None):
-        path = rec.pop('path')
+        filename = rec.pop('filename')
         signature = rec.pop('signature')
         if 'metadata' in rec:
             rec.pop('metadata')
@@ -80,7 +80,7 @@ class SignatureES(SignatureDatabaseBase):
         formatted_res = [{'id': x['_id'],
                           'score': x['_score'],
                           'metadata': x['_source'].get('metadata'),
-                          'path': x['_source'].get('url', x['_source'].get('path'))}
+                          'filename': x['_source'].get('filename')}
                          for x in res]
 
         for i, row in enumerate(formatted_res):
@@ -93,19 +93,19 @@ class SignatureES(SignatureDatabaseBase):
         rec['timestamp'] = datetime.now()
         self.es.index(index=self.index, doc_type=self.doc_type, body=rec, refresh=refresh_after)
 
-    def delete_duplicates(self, path):
+    def delete_duplicates(self, filename):
         """Delete all but one entries in elasticsearch whose `path` value is equivalent to that of path.
         Args:
             path (string): path value to compare to those in the elastic search
         """
-        matching_paths = [item['_id'] for item in
+        matching_filenames = [item['_id'] for item in
                           self.es.search(body={'query':
                                                {'match':
-                                                {'path': path}
+                                                {'filename': filename}
                                                }
                                               },
                                          index=self.index)['hits']['hits']
-                          if item['_source']['path'] == path]
-        if len(matching_paths) > 0:
-            for id_tag in matching_paths[1:]:
+                          if item['_source']['filename'] == filename]
+        if len(matching_filenames) > 0:
+            for id_tag in matching_filenames:
                 self.es.delete(index=self.index, doc_type=self.doc_type, id=id_tag)

@@ -49,6 +49,7 @@ class SignatureES(SignatureDatabaseBase):
     def search_single_record(self, rec, pre_filter=None):
         filename = rec.pop('filename')
         signature = rec.pop('signature')
+        st = rec.pop('time')
         if 'metadata' in rec:
             rec.pop('metadata')
 

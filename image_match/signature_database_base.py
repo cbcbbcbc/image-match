@@ -2,6 +2,7 @@ from image_match.goldberg import ImageSignature
 from itertools import product
 from operator import itemgetter
 import numpy as np
+import time
 
 
 class SignatureDatabaseBase(object):
@@ -344,6 +345,10 @@ def make_record(filename, path, gis, k, N, bytestream=False, metadata=None):
     record['filename'] = filename
     signature = gis.generate_signature(path, bytestream=bytestream)
     record['signature'] = signature.tolist()
+
+    lt = time.localtime()
+    st = time.strftime("%Y%m%d", lt)
+    record['time'] = st
 
     if metadata:
         record['metadata'] = metadata

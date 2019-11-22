@@ -9,22 +9,40 @@ ses = SignatureES(es)
 
 @app.route('/search/url')
 def searchByUrl():
-    return json.dumps(ses.search_image(request.args.get('url')))
+    q = request.args.get('query')
+    query = None
+    if q:
+        query = json.loads(q)
+    return json.dumps(ses.search_image(request.args.get('url'), query=query))
 
 @app.route('/search/data', methods=['POST'])
 def searchByData():
-    return json.dumps(ses.search_image(request.stream.read(), bytestream=True))
+    q = request.args.get('query')
+    query = None
+    if q:
+        query = json.loads(q)
+    return json.dumps(ses.search_image(request.stream.read(), bytestream=True, query=query))
 
 @app.route('/index/url')
 def indexByUrl():
-    ses.delete_duplicates(request.args.get('filename'))
-    ses.add_image(request.args.get('filename'), request.args.get('url'), metadata={'itemno': request.args.get('itemno')})
+    filename = request.args.get('filename')
+    ses.delete_duplicates(filename)
+    metadata = None
+    md = request.args.get('metadata')
+    if md:
+        metadata = json.loads(md)
+    ses.add_image(filename, request.args.get('url'), metadata=metadata)
     return 'OK'
 
 @app.route('/index/data', methods=['POST'])
 def indexByData():
-    ses.delete_duplicates(request.args.get('filename'))
-    ses.add_image(request.args.get('filename'), request.stream.read(), bytestream=True, metadata={'itemno': request.args.get('itemno')})
+    filename = request.args.get('filename')
+    ses.delete_duplicates(filename)
+    metadata = None
+    md = request.args.get('metadata')
+    if md:
+        metadata = json.loads(md)
+    ses.add_image(filename, request.stream.read(), bytestream=True, metadata=metadata)
     return 'OK'
 
 if __name__ == '__main__':

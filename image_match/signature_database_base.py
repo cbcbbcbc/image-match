@@ -2,7 +2,6 @@ from image_match.goldberg import ImageSignature
 from itertools import product
 from operator import itemgetter
 import numpy as np
-import time
 
 
 class SignatureDatabaseBase(object):
@@ -14,7 +13,7 @@ class SignatureDatabaseBase(object):
 
     """
 
-    def search_single_record(self, rec, pre_filter=None):
+    def search_single_record(self, rec, query=None, pre_filter=None):
         """Search for a matching image record.
 
         Must be implemented by derived class.
@@ -209,7 +208,7 @@ class SignatureDatabaseBase(object):
         rec = make_record(filename, path, self.gis, self.k, self.N, bytestream=bytestream, metadata=metadata)
         self.insert_single_record(rec, refresh_after=refresh_after)
 
-    def search_image(self, path, bytestream=False, all_orientations=False, pre_filter=None):
+    def search_image(self, path, bytestream=False, all_orientations=False, query=None, pre_filter=None):
         """Search for matches
 
         Args:
@@ -273,7 +272,7 @@ class SignatureDatabaseBase(object):
             # generate the signature
             transformed_record = make_record('', transformed_img, self.gis, self.k, self.N)
 
-            l = self.search_single_record(transformed_record, pre_filter=pre_filter)
+            l = self.search_single_record(transformed_record, query=query, pre_filter=pre_filter)
             result.extend(l)
 
         ids = set()
@@ -345,10 +344,6 @@ def make_record(filename, path, gis, k, N, bytestream=False, metadata=None):
     record['filename'] = filename
     signature = gis.generate_signature(path, bytestream=bytestream)
     record['signature'] = signature.tolist()
-
-    lt = time.localtime()
-    st = time.strftime("%Y%m%d", lt)
-    record['time'] = st
 
     if metadata:
         record['metadata'] = metadata

@@ -46,21 +46,27 @@ class SignatureES(SignatureDatabaseBase):
 
         super(SignatureES, self).__init__(*args, **kwargs)
 
-    def search_single_record(self, rec, pre_filter=None):
-        filename = rec.pop('filename')
+    def search_single_record(self, rec, query=None, pre_filter=None):
+        rec.pop('filename')
         signature = rec.pop('signature')
-        st = rec.pop('time')
-        if 'metadata' in rec:
-            rec.pop('metadata')
 
         # build the 'should' list
         should = [{'term': {word: rec[word]}} for word in rec]
-        body = {
-            'query': {
-                   'bool': {'should': should}
-            },
-            '_source': {'excludes': ['simple_word_*']}
-        }
+
+        if query:
+            body = {
+                'query': {
+                    'bool': {'should': should, 'must': query}
+                },
+                '_source': {'excludes': ['simple_word_*']}
+            }
+        else:
+            body = {
+                'query': {
+                    'bool': {'should': should}
+                },
+                '_source': {'excludes': ['simple_word_*']}
+            }
 
         if pre_filter is not None:
             body['query']['bool']['filter'] = pre_filter
@@ -102,11 +108,10 @@ class SignatureES(SignatureDatabaseBase):
         matching_filenames = [item['_id'] for item in
                           self.es.search(body={'query':
                                                {'match':
-                                                {'filename': filename}
+                                                {'filename.keyword': filename}
                                                }
                                               },
-                                         index=self.index)['hits']['hits']
-                          if item['_source']['filename'] == filename]
+                                         index=self.index)['hits']['hits']]
         if len(matching_filenames) > 0:
             for id_tag in matching_filenames:
                 self.es.delete(index=self.index, doc_type=self.doc_type, id=id_tag)

@@ -107,11 +107,11 @@ class SignatureES(SignatureDatabaseBase):
         """
         matching_filenames = [item['_id'] for item in
                           self.es.search(body={'query':
-                                               {'match':
+                                               {'term':
                                                 {'filename.keyword': filename}
                                                }
                                               },
-                                         index=self.index)['hits']['hits']]
+                                        index=self.index)['hits']['hits']]
         if len(matching_filenames) > 0:
             for id_tag in matching_filenames:
                 self.es.delete(index=self.index, doc_type=self.doc_type, id=id_tag)

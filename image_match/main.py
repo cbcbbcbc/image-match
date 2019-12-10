@@ -7,6 +7,10 @@ app = Flask(__name__)
 es = Elasticsearch(['127.0.0.1'])
 ses = SignatureES(es)
 
+@app.route('/search/filename')
+def searchByFilename():
+    return json.dumps(ses.search_record(request.args.get('filename')))
+
 @app.route('/search/url')
 def searchByUrl():
     q = request.args.get('query')

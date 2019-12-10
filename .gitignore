@@ -58,3 +58,4 @@ target/
 image_match/web/static/tmp/
 
 *.jpg
+.vscode/settings.json

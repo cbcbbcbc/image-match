@@ -12,6 +12,7 @@ def init():
     rec = { 'filename': 'foo' }
     ses.insert_single_record(rec)
     ses.delete_duplicates('foo')
+    return 'OK'
 
 @app.route('/search/filename')
 def searchByFilename():

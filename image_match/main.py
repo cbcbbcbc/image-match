@@ -7,6 +7,12 @@ app = Flask(__name__)
 es = Elasticsearch(['127.0.0.1'])
 ses = SignatureES(es)
 
+@app.route('/init')
+def init():
+    rec = { 'filename': 'foo' }
+    ses.insert_single_record(rec)
+    ses.delete_duplicates('foo')
+
 @app.route('/search/filename')
 def searchByFilename():
     return json.dumps(ses.search_record(request.args.get('filename')))

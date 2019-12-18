@@ -46,7 +46,7 @@ class SignatureES(SignatureDatabaseBase):
 
         super(SignatureES, self).__init__(*args, **kwargs)
 
-    def search_single_record(self, rec, query=None, pre_filter=None):
+    def search_single_record(self, rec, query=None, pre_filter=None, distance_cutoff=0.45):
         rec.pop('filename')
         signature = rec.pop('signature')
 
@@ -92,7 +92,7 @@ class SignatureES(SignatureDatabaseBase):
 
         for i, row in enumerate(formatted_res):
             row['dist'] = dists[i]
-        formatted_res = filter(lambda y: y['dist'] < self.distance_cutoff, formatted_res)
+        formatted_res = filter(lambda y: y['dist'] < distance_cutoff, formatted_res)
 
         return formatted_res
 

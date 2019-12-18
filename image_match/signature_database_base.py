@@ -13,7 +13,7 @@ class SignatureDatabaseBase(object):
 
     """
 
-    def search_single_record(self, rec, query=None, pre_filter=None):
+    def search_single_record(self, rec, query=None, pre_filter=None, distance_cutoff=0.45):
         """Search for a matching image record.
 
         Must be implemented by derived class.
@@ -117,7 +117,7 @@ class SignatureDatabaseBase(object):
         raise NotImplementedError
 
     def __init__(self, k=16, N=63, n_grid=9,
-                 crop_percentile=(5, 95), distance_cutoff=0.45,
+                 crop_percentile=(5, 95),
                  *signature_args, **signature_kwargs):
         """Set up storage scheme for images
 
@@ -157,8 +157,6 @@ class SignatureDatabaseBase(object):
                 the image signature (default 9)
             crop_percentiles (Optional[Tuple[int]]): lower and upper bounds when
                 considering how much variance to keep in the image (default (5, 95))
-            distance_cutoff (Optional [float]): maximum image signature distance to
-                be considered a match (default 0.45)
             *signature_args: Variable length argument list to pass to ImageSignature
             **signature_kwargs: Arbitrary keyword arguments to pass to ImageSignature
 
@@ -174,14 +172,6 @@ class SignatureDatabaseBase(object):
         self.k = k
         self.N = N
         self.n_grid = n_grid
-
-        # Check float input
-        if type(distance_cutoff) is not float:
-            raise TypeError('distance_cutoff should be a float')
-        if distance_cutoff < 0.:
-            raise ValueError('distance_cutoff should be > 0 (got %r)' % distance_cutoff)
-
-        self.distance_cutoff = distance_cutoff
 
         self.crop_percentile = crop_percentile
 
@@ -208,7 +198,7 @@ class SignatureDatabaseBase(object):
         rec = make_record(filename, path, self.gis, self.k, self.N, bytestream=bytestream, metadata=metadata)
         self.insert_single_record(rec, refresh_after=refresh_after)
 
-    def search_image(self, path, bytestream=False, all_orientations=False, query=None, pre_filter=None):
+    def search_image(self, path, bytestream=False, all_orientations=False, query=None, pre_filter=None, distance_cutoff=0.45):
         """Search for matches
 
         Args:
@@ -272,7 +262,7 @@ class SignatureDatabaseBase(object):
             # generate the signature
             transformed_record = make_record('', transformed_img, self.gis, self.k, self.N)
 
-            l = self.search_single_record(transformed_record, query=query, pre_filter=pre_filter)
+            l = self.search_single_record(transformed_record, query=query, pre_filter=pre_filter, distance_cutoff=distance_cutoff)
             result.extend(l)
 
         ids = set()

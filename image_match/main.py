@@ -5,7 +5,7 @@ import json
 
 app = Flask(__name__)
 es = Elasticsearch(['127.0.0.1'])
-ses = SignatureES(es, distance_cutoff=0.59)
+ses = SignatureES(es)
 
 @app.route('/init')
 def init():
@@ -24,7 +24,11 @@ def searchByUrl():
     query = None
     if q:
         query = json.loads(q)
-    return json.dumps(ses.search_image(request.args.get('url'), query=query))
+    c = request.args.get('cutoff')
+    cutoff = 0.45
+    if c:
+        cutoff = float(c)
+    return json.dumps(ses.search_image(request.args.get('url'), query=query, distance_cutoff=cutoff))
 
 @app.route('/search/data', methods=['POST'])
 def searchByData():
@@ -32,7 +36,11 @@ def searchByData():
     query = None
     if q:
         query = json.loads(q)
-    return json.dumps(ses.search_image(request.stream.read(), bytestream=True, query=query))
+    c = request.args.get('cutoff')
+    cutoff = 0.45
+    if c:
+        cutoff = float(c)
+    return json.dumps(ses.search_image(request.stream.read(), bytestream=True, query=query, distance_cutoff=cutoff))
 
 @app.route('/index/url')
 def indexByUrl():

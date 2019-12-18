@@ -5,7 +5,7 @@ import json
 
 app = Flask(__name__)
 es = Elasticsearch(['127.0.0.1'])
-ses = SignatureES(es)
+ses = SignatureES(es, distance_cutoff=0.75)
 
 @app.route('/init')
 def init():
